@@ -2,6 +2,7 @@
 
 #include <Movement/SteeringBehaviors/SteeringHelpers.h>
 #include "Kismet/KismetMathLibrary.h"
+#include <Movement/SteeringBehaviors/SteeringHelpers.h>
 
 class ASteeringAgent;
 
@@ -26,3 +27,24 @@ protected:
 };
 
 // Your own SteeringBehaviors should follow here...
+
+class Seek : public ISteeringBehavior
+{
+public:
+	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+
+
+};
+
+class Flee : public ISteeringBehavior
+{
+public:
+	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+};
+
+class Arrive : public ISteeringBehavior
+{
+public:
+	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+
+};
