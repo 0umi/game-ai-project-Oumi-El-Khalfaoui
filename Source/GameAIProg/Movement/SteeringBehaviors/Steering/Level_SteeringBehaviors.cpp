@@ -19,8 +19,9 @@ void ALevel_SteeringBehaviors::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//AddAgent(BehaviorTypes::Seek);
-	AddAgent(BehaviorTypes::Flee);
+	AddAgent(BehaviorTypes::Seek);
+	//AddAgent(BehaviorTypes::Flee);
+	//AddAgent(BehaviorTypes::Arrive);
 	SteeringAgents[0].Agent->SetDebugRenderingEnabled(true);
 }
 
