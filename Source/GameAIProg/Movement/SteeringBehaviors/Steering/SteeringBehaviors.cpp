@@ -48,13 +48,16 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	DrawDebugCircle(
 		World,
 		End,
-		2.f,
+		100.f,
 		12,
 		FColor::Cyan,
 		false,
 		-1.f,
 		0,
-		2.f
+		2.f,
+		FVector(0, 1, 0),
+		FVector(1, 0, 0),
+		false
 	);
 
 	return Steering;
@@ -65,8 +68,30 @@ SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	
 	SteeringOutput Fleeing{};
 
+	UWorld* World = Agent.GetWorld();
+
+	if (!World)
+	{
+		return Fleeing;
+	}
+
 	Fleeing.LinearVelocity = -Target.Position - Agent.GetPosition();
 
+	FVector Start = FVector(Agent.GetPosition(), 0.0f);
+	FVector End = FVector(-Target.Position, 0.0f);
+
+	DrawDebugDirectionalArrow(
+		World,
+		Start,
+		End,
+		5.0f,
+		FColor::Green,
+		false,
+		-1.0f,
+		0,
+		2.0f
+	);
+	
 	
 
 	return Fleeing;
@@ -75,26 +100,72 @@ SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
 	SteeringOutput Arriving{};
-	Arriving.LinearVelocity = Target.Position - Agent.GetPosition();
-	
-	/*float SlowRadius = 5.f;
-	float TargetRadius = 1.f;*/
+	FVector2D Direction = Target.Position - Agent.GetPosition();
+
+	UWorld* World = Agent.GetWorld();
+
+	if (!World)
+	{
+		return Arriving;
+	}
+
+	FVector Start = FVector(Agent.GetPosition(), 0.0f);
+	FVector End = FVector(-Target.Position, 0.0f);
+
+	float Distance = Direction.Size();
+
+	float SlowRadius = 300.f;
+	float TargetRadius = 10.f;
 
 
-	//FVector2D SlowRadius{ 1.f, 1.f };
-	//FVector2D TargetRadius{ .5f, .5f };
+	/*FVector2D SlowRadius{ 1.f, 1.f };
+	FVector2D TargetRadius{ .5f, .5f };*/
 
-	//if (Arriving.LinearVelocity < SlowRadius)
-	//{
-	//	Agent.SetMaxLinearSpeed(Agent.GetMaxLinearSpeed() / 2.f);
+	if (Distance < TargetRadius)
+	{
+		Arriving.LinearVelocity = FVector2D::ZeroVector;
+		return Arriving;
+	}
+	if (Distance < SlowRadius)
+	{
+		Arriving.LinearVelocity = Direction * Agent.GetMaxLinearSpeed() / 2;
 
-	//}
-	//if (Arriving.LinearVelocity < TargetRadius)
-	//{
-	//	Agent.SetMaxLinearSpeed(0);
-	//}
-	
+	}
+	else {
+		Arriving.LinearVelocity = Direction * Agent.GetMaxLinearSpeed();
+		
+	}
 
+	DrawDebugCircle(
+		World,
+		Start,
+		SlowRadius,
+		12,
+		FColor::Cyan,
+		false,
+		-1.f,
+		0,
+		2.f,
+		FVector(0, 1, 0),
+		FVector(1, 0, 0),
+		false
+	);
+
+	DrawDebugCircle(
+		World,
+		-End,
+		50.f,
+		12,
+		FColor::Red,
+		false,
+		-1.f,
+		0,
+		2.f,
+		FVector(0, 1, 0),
+		FVector(1, 0, 0),
+		false
+	);
 
 	return Arriving;
 }
+
