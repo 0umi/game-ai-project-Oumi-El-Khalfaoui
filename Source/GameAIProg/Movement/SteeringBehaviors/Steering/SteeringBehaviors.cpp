@@ -110,31 +110,51 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	}
 
 	FVector Start = FVector(Agent.GetPosition(), 0.0f);
-	FVector End = FVector(-Target.Position, 0.0f);
+	FVector End = FVector(Target.Position, 0.0f);
 
 	float Distance = Direction.Size();
 
-	float SlowRadius = 300.f;
-	float TargetRadius = 10.f;
-
-
-	/*FVector2D SlowRadius{ 1.f, 1.f };
-	FVector2D TargetRadius{ .5f, .5f };*/
+	float SlowRadius = 500.f;
+	float TargetRadius = 100.f;
+	
+	if (OriginalMaxSpeed < 0.f)
+	{
+		OriginalMaxSpeed = Agent.GetMaxLinearSpeed();
+	}
 
 	if (Distance < TargetRadius)
 	{
+		Agent.SetMaxLinearSpeed(0.f);
 		Arriving.LinearVelocity = FVector2D::ZeroVector;
 		return Arriving;
 	}
+
+	FVector2D NormalisedDirection = Direction.GetSafeNormal();
+
+
 	if (Distance < SlowRadius)
 	{
-		Arriving.LinearVelocity = Direction * Agent.GetMaxLinearSpeed() / 2;
-
+		float SpeedScale = (Distance - TargetRadius) / (SlowRadius - TargetRadius);
+		Agent.SetMaxLinearSpeed(OriginalMaxSpeed * SpeedScale);
 	}
 	else {
-		Arriving.LinearVelocity = Direction * Agent.GetMaxLinearSpeed();
-		
+		//TargetSpeed = Agent.GetMaxLinearSpeed();
+		Agent.SetMaxLinearSpeed(OriginalMaxSpeed);
 	}
+
+	Arriving.LinearVelocity = NormalisedDirection;
+
+	DrawDebugDirectionalArrow(
+		World,
+		Start,
+		End,
+		5.0f,
+		FColor::Green,
+		false,
+		-1.0f,
+		0,
+		2.0f
+	);
 
 	DrawDebugCircle(
 		World,
@@ -153,8 +173,23 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 	DrawDebugCircle(
 		World,
-		-End,
-		50.f,
+		Start,
+		TargetRadius,
+		12,
+		FColor::Cyan,
+		false,
+		-1.f,
+		0,
+		2.f,
+		FVector(0, 1, 0),
+		FVector(1, 0, 0),
+		false
+	);
+
+	DrawDebugCircle(
+		World,
+		End,
+		5.f,
 		12,
 		FColor::Red,
 		false,

@@ -47,4 +47,7 @@ class Arrive : public ISteeringBehavior
 public:
 	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
 
+private:
+	float OriginalMaxSpeed = -1.f;
+
 };
