@@ -32,7 +32,7 @@ void ASteeringAgent::Tick(float DeltaTime)
 		AddMovementInput(FVector{output.LinearVelocity, 0.f});
 
 
-		if (abs(output.AngularVelocity) > KINDA_SMALL_NUMBER)
+		if (fabsf(output.AngularVelocity) > KINDA_SMALL_NUMBER)
 		{
 			float currentRotation = GetRotation();
 

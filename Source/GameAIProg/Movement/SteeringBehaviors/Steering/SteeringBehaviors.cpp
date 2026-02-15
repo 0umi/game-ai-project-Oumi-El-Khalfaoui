@@ -225,12 +225,32 @@ SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 	//float linearDistance = Direction.Size();
 
-	float targetAngle = FMath::Atan2(Direction.Y, Direction.X);
+	float targetAngle = FMath::RadiansToDegrees(atan2f(Direction.Y, Direction.X));
 	float forward = Agent.GetRotation();
 	float angularDistance = targetAngle - forward;
 
-	Facing.AngularVelocity = angularDistance * Agent.GetMaxAngularSpeed();
+	while (angularDistance > 180.f) {
+		angularDistance -= 360.f;
 
+	}
+	while (angularDistance < -180.f) {
+		angularDistance += 360.f;
+
+	}
+
+	float angularThreshold = 2.f;
+
+	if (fabsf(angularDistance) < angularThreshold)
+	{
+		Facing.AngularVelocity = 0.f;
+	}
+	else
+	{
+		Facing.AngularVelocity = FMath::Sign(angularDistance) * Agent.GetMaxAngularSpeed();
+
+	}
+
+	Facing.LinearVelocity = FVector2D::ZeroVector;
 
 	DrawDebugDirectionalArrow(
 		World,
