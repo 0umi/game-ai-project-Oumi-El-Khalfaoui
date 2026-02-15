@@ -283,3 +283,21 @@ SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 	return Facing;
 }
+
+SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
+{
+	SteeringOutput Pursuing{};
+	return Pursuing;
+}
+
+SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
+{
+	SteeringOutput Evading{};
+	return Evading;
+}
+
+SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
+{
+	SteeringOutput Wandering{};
+	return Wandering;
+}

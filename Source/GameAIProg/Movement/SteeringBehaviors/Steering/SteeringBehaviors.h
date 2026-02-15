@@ -57,3 +57,22 @@ class Face : public ISteeringBehavior
 public:
 	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
 };
+
+
+class Pursuit : public ISteeringBehavior
+{
+public:
+	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+};
+
+class Evade : public ISteeringBehavior
+{
+public:
+	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+};
+
+class Wander : public ISteeringBehavior
+{
+public:
+	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+};
