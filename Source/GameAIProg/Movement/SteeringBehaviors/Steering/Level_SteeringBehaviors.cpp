@@ -21,7 +21,8 @@ void ALevel_SteeringBehaviors::BeginPlay()
 
 	//AddAgent(BehaviorTypes::Seek);
 	//AddAgent(BehaviorTypes::Flee);
-	AddAgent(BehaviorTypes::Arrive);
+	//AddAgent(BehaviorTypes::Arrive);
+	AddAgent(BehaviorTypes::Face);
 	SteeringAgents[0].Agent->SetDebugRenderingEnabled(true);
 }
 
@@ -237,6 +238,9 @@ void ALevel_SteeringBehaviors::SetAgentBehavior(ImGui_Agent& Agent)
 		break;
 	case BehaviorTypes::Arrive:
 		Agent.Behavior = std::make_unique<Arrive>();
+		break;
+	case BehaviorTypes::Face:
+		Agent.Behavior = std::make_unique<Face>();
 		break;
 	default:
 		assert(false); // Incorrect Agent Behavior gotten during SetAgentBehavior()	

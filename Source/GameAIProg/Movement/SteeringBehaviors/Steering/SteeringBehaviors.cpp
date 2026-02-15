@@ -204,3 +204,62 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	return Arriving;
 }
 
+SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
+{
+	SteeringOutput Facing{};
+
+	UWorld* World = Agent.GetWorld();
+
+	if (!World)
+	{
+		return Facing;
+	}
+
+	FVector Start = FVector(Agent.GetPosition(), 0.0f);
+	FVector End = FVector(Target.Position, 0.0f);
+
+
+
+	//Facing.LinearVelocity = Target.Position - Agent.GetPosition();
+	FVector2D Direction = Target.Position - Agent.GetPosition();
+
+	//float linearDistance = Direction.Size();
+
+	float targetAngle = FMath::Atan2(Direction.Y, Direction.X);
+	float forward = Agent.GetRotation();
+	float angularDistance = targetAngle - forward;
+
+	Facing.AngularVelocity = angularDistance * Agent.GetMaxAngularSpeed();
+
+
+	DrawDebugDirectionalArrow(
+		World,
+		Start,
+		End,
+		5.0f,
+		FColor::Green,
+		false,
+		-1.0f,
+		0,
+		2.0f
+	);
+
+	DrawDebugCircle(
+		World,
+		End,
+		5.f,
+		12,
+		FColor::Red,
+		false,
+		-1.f,
+		0,
+		2.f,
+		FVector(0, 1, 0),
+		FVector(1, 0, 0),
+		false
+	);
+
+
+
+	return Facing;
+}

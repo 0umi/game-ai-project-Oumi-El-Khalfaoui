@@ -30,6 +30,20 @@ void ASteeringAgent::Tick(float DeltaTime)
 	{
 		SteeringOutput output = SteeringBehavior->CalculateSteering(DeltaTime, *this);
 		AddMovementInput(FVector{output.LinearVelocity, 0.f});
+
+
+		if (abs(output.AngularVelocity) > KINDA_SMALL_NUMBER)
+		{
+			float currentRotation = GetRotation();
+
+			float newRotation = currentRotation + output.AngularVelocity * DeltaTime;
+
+			FRotator NewRotator = FRotator(0.f, newRotation, 0.f);
+
+			SetActorRotation(NewRotator);
+		}
+		
+		
 	}
 }
 
