@@ -377,8 +377,109 @@ SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-	SteeringOutput Evading{};
-	return Evading;
+	UWorld* World = Agent.GetWorld();
+	if (!World)
+	{
+		return SteeringOutput{};
+	}
+
+	FVector2D ToTarget = Target.Position - Agent.GetPosition();
+	float distance = ToTarget.Size();
+
+	float evaderSpeed = Agent.GetMaxLinearSpeed();
+
+	if (evaderSpeed <= KINDA_SMALL_NUMBER)
+		return SteeringOutput{};
+
+	float threatSpeed = Target.LinearVelocity.Size();
+	float predictionTime;
+
+	if (threatSpeed < KINDA_SMALL_NUMBER)
+	{
+		predictionTime = 0.f;
+	}
+	else
+	{
+		predictionTime = distance / evaderSpeed;
+		predictionTime = FMath::Min(predictionTime, 1.5f);
+	}
+
+	FVector2D predictedPosition = Target.Position + (Target.LinearVelocity * predictionTime);
+
+	FVector2D predictionOffset = predictedPosition - Target.Position;
+	float predictionDistance = predictionOffset.Size();
+	float maxPredictionDistance = distance * 2.0f;
+
+	if (predictionDistance > maxPredictionDistance)
+	{
+		predictedPosition = Target.Position + predictionOffset.GetSafeNormal() * maxPredictionDistance;
+	}
+
+	FTargetData originalTarget = Target;
+	Target.Position = predictedPosition;
+
+	SteeringOutput result = Flee::CalculateSteering(DeltaT, Agent);
+
+	Target = originalTarget;
+
+	// Debug
+	FVector Start = FVector(Agent.GetPosition(), 0.0f);
+	FVector CurrentThreatPos = FVector(originalTarget.Position, 0.0f);
+	FVector PredictedPos = FVector(predictedPosition, 0.0f);
+
+	DrawDebugDirectionalArrow(
+		World,
+		Start,
+		CurrentThreatPos,
+		5.0f,
+		FColor::Yellow,
+		false,
+		-1.0f,
+		0,
+		2.0f
+	);
+
+	DrawDebugDirectionalArrow(
+		World,
+		Start,
+		Start + FVector(result.LinearVelocity.GetSafeNormal() * 200.f, 0.f),
+		5.0f,
+		FColor::Red,
+		false,
+		-1.0f,
+		0,
+		3.0f
+	);
+
+	DrawDebugCircle(
+		World,
+		PredictedPos,
+		10.f,
+		12,
+		FColor::Magenta,
+		false,
+		-1.f,
+		0,
+		3.f,
+		FVector(0, 1, 0),
+		FVector(1, 0, 0),
+		false
+	);
+
+	FVector VelocityEnd = CurrentThreatPos + FVector(Target.LinearVelocity * predictionTime, 0.0f);
+	DrawDebugDirectionalArrow(
+		World,
+		CurrentThreatPos,
+		VelocityEnd,
+		3.0f,
+		FColor::Cyan,
+		false,
+		-1.0f,
+		0,
+		1.5f
+	);
+
+	return result;
 }
 
 SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
