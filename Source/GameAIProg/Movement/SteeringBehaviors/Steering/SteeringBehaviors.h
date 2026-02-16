@@ -59,13 +59,13 @@ public:
 };
 
 
-class Pursuit : public ISteeringBehavior
+class Pursuit : public Seek
 {
 public:
 	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
 };
 
-class Evade : public ISteeringBehavior
+class Evade : public Flee
 {
 public:
 	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;

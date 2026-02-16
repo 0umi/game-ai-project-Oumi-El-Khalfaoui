@@ -48,9 +48,9 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	DrawDebugCircle(
 		World,
 		End,
-		100.f,
+		5.f,
 		12,
-		FColor::Cyan,
+		FColor::Red,
 		false,
 		-1.f,
 		0,
@@ -286,8 +286,93 @@ SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-	SteeringOutput Pursuing{};
-	return Pursuing;
+	UWorld* World = Agent.GetWorld();
+	if (!World)
+	{
+		return SteeringOutput{};
+	}
+
+	FVector2D ToTarget = Target.Position - Agent.GetPosition();
+	float distance = ToTarget.Size();
+
+	float pursuerSpeed = Agent.GetMaxLinearSpeed();
+
+	if (pursuerSpeed <= KINDA_SMALL_NUMBER)
+		return SteeringOutput{};
+
+	// t = d/v {Predicted time = distance (between target and agent) / pursuer's speed
+	float predictionTime = distance / pursuerSpeed;
+
+	// d = v * t
+	FVector2D predictedPosition = Target.Position + (Target.LinearVelocity * predictionTime);
+
+	
+	FTargetData originalTarget = Target;
+	Target.Position = predictedPosition;
+
+	SteeringOutput result = Seek::CalculateSteering(DeltaT, Agent);
+
+	Target = originalTarget;
+
+
+
+	FVector Start = FVector(Agent.GetPosition(), 0.0f);
+	FVector CurrentTargetPos = FVector(originalTarget.Position, 0.0f);
+	FVector PredictedPos = FVector(predictedPosition, 0.0f);
+
+	DrawDebugDirectionalArrow(
+		World,
+		Start,
+		CurrentTargetPos,
+		5.0f,
+		FColor::Yellow,
+		false,
+		-1.0f,
+		0,
+		2.0f
+	);
+
+	DrawDebugDirectionalArrow(
+		World,
+		Start,
+		PredictedPos,
+		5.0f,
+		FColor::Green,
+		false,
+		-1.0f,
+		0,
+		3.0f 
+	);
+
+	DrawDebugCircle(
+		World,
+		PredictedPos,
+		5.f,
+		12,
+		FColor::Magenta,
+		false,
+		-1.f,
+		0,
+		3.f,
+		FVector(0, 1, 0),
+		FVector(1, 0, 0),
+		false
+	);
+
+	FVector VelocityEnd = CurrentTargetPos + FVector(Target.LinearVelocity * predictionTime, 0.0f);
+	DrawDebugDirectionalArrow(
+		World,
+		CurrentTargetPos,
+		VelocityEnd,
+		3.0f,
+		FColor::Cyan,
+		false,
+		-1.0f,
+		0,
+		1.5f
+	);
+
+	return result;
 }
 
 SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)

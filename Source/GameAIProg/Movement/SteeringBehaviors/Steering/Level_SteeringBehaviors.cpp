@@ -19,14 +19,26 @@ void ALevel_SteeringBehaviors::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//AddAgent(BehaviorTypes::Seek);
+	AddAgent(BehaviorTypes::Seek);
+	SteeringAgents[0].Agent->SetDebugRenderingEnabled(true);
 	//AddAgent(BehaviorTypes::Flee);
 	//AddAgent(BehaviorTypes::Arrive);
-	AddAgent(BehaviorTypes::Face);
-	//AddAgent(BehaviorTypes::Pursuit);
+	//AddAgent(BehaviorTypes::Face);
+	AddAgent(BehaviorTypes::Pursuit);
+	if (SteeringAgents.size() > 1)
+	{
+		SteeringAgents[1].Agent->SetActorLocation(FVector(500.f, 500.f, 90.f));
+		SteeringAgents[1].Agent->SetDebugRenderingEnabled(true);
+
+		// Make pursuer target the seeker
+		SteeringAgents[1].SelectedTarget = 0;
+		SetAgentBehavior(SteeringAgents[1]);
+		SteeringAgents[1].Agent->SetMaxLinearSpeed(200.f);
+		
+	}
 	//AddAgent(BehaviorTypes::Evade);
 	//AddAgent(BehaviorTypes::Wander);
-	SteeringAgents[0].Agent->SetDebugRenderingEnabled(true);
+
 }
 
 void ALevel_SteeringBehaviors::BeginDestroy()
