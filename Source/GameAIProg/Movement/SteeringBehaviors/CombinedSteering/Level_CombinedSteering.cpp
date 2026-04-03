@@ -1,4 +1,5 @@
 #include "Level_CombinedSteering.h"
+#include "CombinedSteeringBehaviors.h"
 
 #include "imgui.h"
 
@@ -15,6 +16,20 @@ void ALevel_CombinedSteering::BeginPlay()
 {
 	Super::BeginPlay();
 
+	ASteeringAgent* Agent = GetWorld()->SpawnActor<ASteeringAgent>(ASteeringAgent::StaticClass(), FVector(0, 0, 90), FRotator::ZeroRotator);
+
+	if (IsValid(Agent))
+	{
+		pSeek = std::make_unique<Seek>();
+		pWander = std::make_unique<Wander>();
+
+		std::vector<BlendedSteering::WeightedBehavior> behaviors = { {pSeek.get(), 0.5f}, {pWander.get(), 0.5f} };
+		pBlendedSteering = std::make_unique<BlendedSteering>(behaviors);
+
+		Agent->SetSteeringBehavior(pBlendedSteering.get());
+		Agent->SetDebugRenderingEnabled(true);
+		SpawnedAgents.Add(Agent);
+	}
 }
 
 void ALevel_CombinedSteering::BeginDestroy()

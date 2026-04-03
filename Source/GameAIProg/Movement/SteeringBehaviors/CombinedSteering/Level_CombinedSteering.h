@@ -7,7 +7,9 @@
 #include "GameAIProg/Shared/Level_Base.h"
 #include "GameAIProg/Movement/SteeringBehaviors/Steering/SteeringBehaviors.h"
 #include "GameAIProg/Movement/SteeringBehaviors/SteeringAgent.h"
+#include <memory>
 #include "Level_CombinedSteering.generated.h"
+
 
 UCLASS()
 class GAMEAIPROG_API ALevel_CombinedSteering : public ALevel_Base
@@ -32,5 +34,11 @@ private:
 	bool UseMouseTarget = false;
 	bool CanDebugRender = false;
 
+	UPROPERTY()
+	TArray<ASteeringAgent*> SpawnedAgents;
+
+	std::unique_ptr<Seek> pSeek;
+	std::unique_ptr<Wander> pWander;
+	std::unique_ptr<BlendedSteering> pBlendedSteering;
 	
 };
