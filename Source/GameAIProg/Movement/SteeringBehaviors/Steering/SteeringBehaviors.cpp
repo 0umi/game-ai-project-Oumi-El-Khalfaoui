@@ -60,6 +60,8 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 		false
 	);
 
+	Steering.IsValid = true;
+
 	return Steering;
 }
 
@@ -92,7 +94,7 @@ SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 		2.0f
 	);
 	
-	
+	Fleeing.IsValid = true;
 
 	return Fleeing;
 }
@@ -201,6 +203,8 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 		false
 	);
 
+	Arriving.IsValid = true;
+
 	return Arriving;
 }
 
@@ -279,7 +283,7 @@ SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 		false
 	);
 
-
+	Facing.IsValid = true;
 
 	return Facing;
 }
@@ -372,6 +376,8 @@ SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 		1.5f
 	);
 
+	result.IsValid = true;
+
 	return result;
 }
 
@@ -385,6 +391,15 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 	FVector2D ToTarget = Target.Position - Agent.GetPosition();
 	float distance = ToTarget.Size();
+
+	float evadeRadius = 300.f;
+
+	if (distance > evadeRadius)
+	{
+		SteeringOutput invalid{};
+		invalid.IsValid = false;
+		return invalid;
+	}
 
 	float evaderSpeed = Agent.GetMaxLinearSpeed();
 
@@ -479,11 +494,34 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 		1.5f
 	);
 
+	result.IsValid = true;
+
 	return result;
 }
 
 SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
 	SteeringOutput Wandering{};
+
+	float offset = 150.f;
+	float radius = 50.f;
+	float maxAngleChange = 0.5;
+
+	WanderAngle += FMath::RandRange(-maxAngleChange, maxAngleChange);
+
+	float agentRotationRad = FMath::DegreesToRadians(Agent.GetRotation());
+	FVector2D forward = FVector2D(cosf(agentRotationRad), sinf(agentRotationRad));
+
+	FVector2D circleCenter = Agent.GetPosition() + forward * offset;
+
+	FVector2D displacement = FVector2D(cosf(WanderAngle), sinf(WanderAngle)) * radius;
+	FVector2D target = circleCenter + displacement;
+
+	FVector2D direction = (target - Agent.GetPosition()).GetSafeNormal();
+
+	Wandering.LinearVelocity = direction * Agent.GetMaxLinearSpeed();
+	Wandering.AngularVelocity = 0.f;
+	Wandering.IsValid = true;
+
 	return Wandering;
 }

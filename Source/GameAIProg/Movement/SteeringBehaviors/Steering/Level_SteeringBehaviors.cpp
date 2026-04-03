@@ -25,7 +25,8 @@ void ALevel_SteeringBehaviors::BeginPlay()
 	//AddAgent(BehaviorTypes::Arrive);
 	//AddAgent(BehaviorTypes::Face);
 	//AddAgent(BehaviorTypes::Pursuit);
-	AddAgent(BehaviorTypes::Evade);
+	//AddAgent(BehaviorTypes::Evade);
+	AddAgent(BehaviorTypes::Wander);
 
 	if (SteeringAgents.size() > 1)
 	{

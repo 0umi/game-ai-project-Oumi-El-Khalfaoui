@@ -73,6 +73,8 @@ public:
 
 class Wander : public ISteeringBehavior
 {
+private:
+	float WanderAngle = 0.f;
 public:
 	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
 };
