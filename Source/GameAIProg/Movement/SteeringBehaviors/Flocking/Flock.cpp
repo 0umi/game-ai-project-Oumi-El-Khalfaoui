@@ -22,7 +22,17 @@ Flock::Flock(UWorld* pWorld, TSubclassOf<ASteeringAgent> AgentClass, int FlockSi
 	pVelMatchBehavior = std::make_unique<VelocityMatch>(this);
 
 	// blended
+	pBlendedSteering = std::make_unique<BlendedSteering>(std::vector<BlendedSteering::WeightedBehavior>{
+		{pSeparationBehavior.get(), 0.6f},
+		{ pCohesionBehavior.get(), 0.4f },
+		{ pVelMatchBehavior.get(), 0.4f },
+		{ pSeekBehavior.get(), 0.3f },
+		{ pWanderBehavior.get(), 0.2f }
+	});
+	 
 	//priority
+	pPrioritySteering = std::make_unique<PrioritySteering>(std::vector<ISteeringBehavior*>{pEvadeBehavior.get(), pBlendedSteering.get()});
+
 
 	Neighbors.SetNum(FlockSize);
 
@@ -118,6 +128,18 @@ void Flock::Tick(float DeltaTime)
 void Flock::RenderDebug()
 {
  // TODO: Render all the agents in the flock
+	if (DebugRenderNeighborhood)
+	{
+		RenderNeighborhood();
+	}
+
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+	if (DebugRenderPartitions)
+	{
+		pPartitionedSpace->RenderCells();
+	}
+#endif // GAMEAI_USE_SPACE_PARTITIONING
+
 }
 
 void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
