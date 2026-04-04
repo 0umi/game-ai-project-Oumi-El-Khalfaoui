@@ -34,6 +34,7 @@ private:
 //************************
 class VelocityMatch final : public ISteeringBehavior
 {
+public:
 	VelocityMatch(Flock* const pFlock) : pFlock(pFlock) {}
 
 	//Velocity Match Behaviour

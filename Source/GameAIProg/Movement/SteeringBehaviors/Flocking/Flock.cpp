@@ -174,6 +174,35 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 void Flock::RenderNeighborhood()
 {
  // TODO: Debugrender the neighbors for the first agent in the flock
+	if (Agents.IsEmpty() || !IsValid(Agents[0]))
+	{
+		return;
+	}
+
+	ASteeringAgent* First = Agents[0];
+	FVector Center(First->GetPosition(), 100.f);
+
+	//debug
+	DrawDebugCircle(pWorld, Center, NeighborhoodRadius, 32, FColor::White, false, -1.f, 0, 3.f, FVector(0, 1, 0), FVector(1, 0, 0));
+
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+	int NrN = pPartitionedSpace->GetNrOfNeighbors();
+	auto const& N = pPartitionedSpace->GetNeighbors();
+#else
+	int NrN = NrOfNeighbors;
+	auto const& N = Neighbors;
+#endif // GAMEAI_USE_SPACE_PARTITIONING
+
+	// highlight neighbors
+	for (int index = 0; index < NrN; index++)
+	{
+		if (!IsValid(N[index]))
+		{
+			continue;
+		}
+		DrawDebugSphere(pWorld, FVector(N[index]->GetPosition(), 100.f), 20.f, 8, FColor::Cyan, false, -1.f, 0, 3.f);
+	}
+
 }
 
 #ifndef GAMEAI_USE_SPACE_PARTITIONING
@@ -238,12 +267,36 @@ FVector2D Flock::GetAverageNeighborVelocity() const
 	FVector2D avgVelocity = FVector2D::ZeroVector;
 
  // TODO: Implement
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+	int NrN = pPartitionedSpace->GetNrOfNeighbors();
+	auto const& N = pPartitionedSpace->GetNeighbors();
+#else
+	int NrN = NrOfNeighbors;
+	auto const& N = Neighbors;
+#endif // GAMEAI_USE_SPACE_PARTITIONING
 
-	return avgVelocity;
+	if (NrN == 0)
+	{
+		return avgVelocity;
+	}
+
+	for (int index = 0; index < NrN; index++)
+	{
+		if (IsValid(N[index]))
+		{
+			avgVelocity += N[index]->GetLinearVelocity();
+		}
+	}
+
+	return avgVelocity / static_cast<float>(NrN);
 }
 
 void Flock::SetTarget_Seek(FSteeringParams const& Target)
 {
  // TODO: Implement
+	if (pSeekBehavior)
+	{
+		pSeekBehavior->SetTarget(Target);
+	}
 }
 
