@@ -27,15 +27,47 @@ SteeringOutput Cohesion::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
 //SEPARATION (FLOCKING)
 SteeringOutput Separation::CalculateSteering(float deltaT, ASteeringAgent& Agent)
 {
-	return SteeringOutput();
+	SteeringOutput Steering{};
+
+	int NrNeighbors = pFlock->GetNrOfNeighbors();
+	if (NrNeighbors == 0)
+	{
+		return Steering;
+	}
+
+	FVector2D AgentPos = Agent.GetPosition();
+	FVector2D TotalForce = FVector2D::ZeroVector;
+
+	auto const& Neighbors = pFlock->GetNeighbors();
+
+	for (int index = 0; index < NrNeighbors; index++)
+	{
+		if (!Neighbors[index])
+		{
+			continue;
+		}
+
+		FVector2D ToNeighbor = AgentPos - Neighbors[index]->GetPosition();
+		float Dist = ToNeighbor.Size();
+
+		if (Dist > KINDA_SMALL_NUMBER)
+		{
+			float Strength = 1.f / (Dist * Dist);
+			TotalForce += ToNeighbor.GetSafeNormal() * Strength;
+		}
+	}
+
+	Steering.LinearVelocity = TotalForce.GetSafeNormal() * Agent.GetMaxLinearSpeed();
+
+	return Steering;
 }
 
 
 
 //*************************
 //VELOCITY MATCH (FLOCKING)
+SteeringOutput VelocityMatch::CalculateSteering(float deltaT, ASteeringAgent& Agent)
+{
 
-//SteeringOutput VelocityMatch::CalculateSteering(float deltaT, ASteeringAgent& Agent)
-//{
-//	return SteeringOutput();
-//}
+	return SteeringOutput();
+}

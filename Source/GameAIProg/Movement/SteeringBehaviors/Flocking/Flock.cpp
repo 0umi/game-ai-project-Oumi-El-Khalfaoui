@@ -41,7 +41,7 @@ Flock::Flock(UWorld* pWorld, TSubclassOf<ASteeringAgent> AgentClass, int FlockSi
 		if (Agent)
 		{
 			Agent->SetActorTickEnabled(false);
-			Agent->SetSteeringBehavior(pCohesionBehavior.get());
+			Agent->SetSteeringBehavior(pSeparationBehavior.get());
 		}
 
 		Agents[index] = Agent;
@@ -86,8 +86,8 @@ void Flock::Tick(float DeltaTime)
 		// TODO: register the neighbors for this agent (-> fill the memory pool with the neighbors for the currently evaluated agent)
 #ifdef GAMEAI_USE_SPACE_PARTITIONING
 		FVector2D OldPos = Agent->GetPosition();
-		pPartitionedSpace->UpdateAgentCell(*Agents, OldPos);
-		pPartitionedSpace->RegisterNeighbors(*Agents, NeighborhoodRadius);
+		pPartitionedSpace->UpdateAgentCell(*Agent, OldPos);
+		pPartitionedSpace->RegisterNeighbors(*Agent, NeighborhoodRadius);
 
 #else
 		RegisterNeighbors(Agent);
@@ -95,8 +95,22 @@ void Flock::Tick(float DeltaTime)
 
 
 		// TODO: update the agent (-> the steeringbehaviors use the neighbors in the memory pool)
-		SteeringOutput Output = pCohesionBehavior->CalculateSteering(DeltaTime, *Agent);
-		Agent->AddMovementInput(FVector(Output.LinearVelocity, 0.f));
+	/*	SteeringOutput Cohesion = pCohesionBehavior->CalculateSteering(DeltaTime, *Agent);
+		SteeringOutput Separation = pSeparationBehavior->CalculateSteering(DeltaTime, *Agent);
+		SteeringOutput Wander = pWanderBehavior->CalculateSteering(DeltaTime, *Agent);
+
+		SteeringOutput final;
+		final.LinearVelocity =
+			Separation.LinearVelocity * 2.0f +
+			Cohesion.LinearVelocity * 1.0f +
+			Wander.LinearVelocity * 0.5f;*/
+
+		SteeringOutput Separation = pSeparationBehavior->CalculateSteering(DeltaTime, *Agent);
+
+		SteeringOutput final;
+		final.LinearVelocity = Separation.LinearVelocity * 5.0f;
+
+		Agent->AddMovementInput(FVector(final.LinearVelocity, 0.f));
 	}
   // TODO: trim the agent to the world
 }
