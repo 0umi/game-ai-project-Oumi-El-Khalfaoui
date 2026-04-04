@@ -57,7 +57,8 @@ SteeringOutput Separation::CalculateSteering(float deltaT, ASteeringAgent& Agent
 		}
 	}
 
-	Steering.LinearVelocity = TotalForce.GetSafeNormal() * Agent.GetMaxLinearSpeed();
+	//Steering.LinearVelocity = TotalForce.GetSafeNormal() * Agent.GetMaxLinearSpeed();
+	Steering.LinearVelocity = TotalForce;
 
 	return Steering;
 }
@@ -68,6 +69,13 @@ SteeringOutput Separation::CalculateSteering(float deltaT, ASteeringAgent& Agent
 //VELOCITY MATCH (FLOCKING)
 SteeringOutput VelocityMatch::CalculateSteering(float deltaT, ASteeringAgent& Agent)
 {
+	SteeringOutput Steering{};
 
-	return SteeringOutput();
+	if (pFlock->GetNrOfNeighbors() == 0)
+	{
+		return Steering;
+	}
+
+	Steering.LinearVelocity = pFlock->GetAverageNeighborVelocity();
+	return Steering;
 }

@@ -19,7 +19,7 @@ Flock::Flock(UWorld* pWorld, TSubclassOf<ASteeringAgent> AgentClass, int FlockSi
 	pEvadeBehavior = std::make_unique<Evade>();
 	pCohesionBehavior = std::make_unique<Cohesion>(this);
 	pSeparationBehavior = std::make_unique<Separation>(this);
-	//pVelMatchBehavior = std::make_unique<VelocityMatch>(this);
+	pVelMatchBehavior = std::make_unique<VelocityMatch>(this);
 
 	// blended
 	//priority
@@ -41,7 +41,7 @@ Flock::Flock(UWorld* pWorld, TSubclassOf<ASteeringAgent> AgentClass, int FlockSi
 		if (Agent)
 		{
 			Agent->SetActorTickEnabled(false);
-			Agent->SetSteeringBehavior(pSeparationBehavior.get());
+			//Agent->SetSteeringBehavior(pVelMatchBehavior.get());
 		}
 
 		Agents[index] = Agent;
@@ -95,7 +95,7 @@ void Flock::Tick(float DeltaTime)
 
 
 		// TODO: update the agent (-> the steeringbehaviors use the neighbors in the memory pool)
-	/*	SteeringOutput Cohesion = pCohesionBehavior->CalculateSteering(DeltaTime, *Agent);
+		SteeringOutput Cohesion = pCohesionBehavior->CalculateSteering(DeltaTime, *Agent);
 		SteeringOutput Separation = pSeparationBehavior->CalculateSteering(DeltaTime, *Agent);
 		SteeringOutput Wander = pWanderBehavior->CalculateSteering(DeltaTime, *Agent);
 
@@ -103,12 +103,12 @@ void Flock::Tick(float DeltaTime)
 		final.LinearVelocity =
 			Separation.LinearVelocity * 2.0f +
 			Cohesion.LinearVelocity * 1.0f +
-			Wander.LinearVelocity * 0.5f;*/
+			Wander.LinearVelocity * 0.5f;
 
-		SteeringOutput Separation = pSeparationBehavior->CalculateSteering(DeltaTime, *Agent);
+		/*SteeringOutput VelocityMatch = pVelMatchBehavior->CalculateSteering(DeltaTime, *Agent);
 
 		SteeringOutput final;
-		final.LinearVelocity = Separation.LinearVelocity * 5.0f;
+		final.LinearVelocity = VelocityMatch.LinearVelocity * 5.0f;*/
 
 		Agent->AddMovementInput(FVector(final.LinearVelocity, 0.f));
 	}
