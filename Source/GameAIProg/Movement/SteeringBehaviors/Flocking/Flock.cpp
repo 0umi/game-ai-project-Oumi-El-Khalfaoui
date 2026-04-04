@@ -1,15 +1,10 @@
 #include "Flock.h"
 #include "FlockingSteeringBehaviors.h"
 #include "Shared/ImGuiHelpers.h"
+#include "DrawDebugHelpers.h"
 
 
-Flock::Flock(
-	UWorld* pWorld,
-	TSubclassOf<ASteeringAgent> AgentClass,
-	int FlockSize,
-	float WorldSize,
-	ASteeringAgent* const pAgentToEvade,
-	bool bTrimWorld)
+Flock::Flock(UWorld* pWorld, TSubclassOf<ASteeringAgent> AgentClass, int FlockSize, float WorldSize, ASteeringAgent* const pAgentToEvade, bool bTrimWorld)
 	: pWorld{pWorld}
 	, FlockSize{ FlockSize }
 	, pAgentToEvade{pAgentToEvade}
@@ -17,11 +12,54 @@ Flock::Flock(
 	Agents.SetNum(FlockSize);
 
  // TODO: initialize the flock and the memory pool
+
+	// stering behaviors
+	pSeekBehavior = std::make_unique<Seek>();
+	pWanderBehavior = std::make_unique<Wander>();
+	pEvadeBehavior = std::make_unique<Evade>();
+	pCohesionBehavior = std::make_unique<Cohesion>(this);
+	pSeparationBehavior = std::make_unique<Separation>(this);
+	//pVelMatchBehavior = std::make_unique<VelocityMatch>(this);
+
+	// blended
+	//priority
+
+
+	// spawn
+	Agents.SetNum(FlockSize);
+	float HalfWorld = WorldSize / 2.f;
+
+	for (int index = 0; index < FlockSize; index++)
+	{
+		FVector2D RandPos = FVector2D(FMath::RandRange(-HalfWorld, HalfWorld), FMath::RandRange(-HalfWorld, HalfWorld));
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		ASteeringAgent* Agent = pWorld->SpawnActor<ASteeringAgent>(AgentClass, FVector(RandPos, 90.f), FRotator::ZeroRotator, SpawnParams);
+
+		if (Agent)
+		{
+			Agent->SetActorTickEnabled(false);
+			Agent->SetSteeringBehavior(pCohesionBehavior.get());
+		}
+
+		Agents[index] = Agent;
+	}
+
 }
 
 Flock::~Flock()
 {
  // TODO: Cleanup any additional data
+	for (ASteeringAgent* Agent : Agents)
+	{
+		if (IsValid(Agent))
+		{
+			Agent->Destroy();
+		}
+	}
+	Agents.Empty();
+
 }
 
 void Flock::Tick(float DeltaTime)

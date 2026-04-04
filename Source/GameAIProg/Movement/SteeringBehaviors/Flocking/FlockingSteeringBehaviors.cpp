@@ -8,11 +8,34 @@
 //COHESION (FLOCKING)
 SteeringOutput Cohesion::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
 {
-	return SteeringOutput{};
+	SteeringOutput Steering{};
+
+	if (pFlock->GetNrOfNeighbors() == 0)
+	{
+		return Steering;
+	}
+
+	FVector2D AvgPos = pFlock->GetAverageNeighborPos();
+
+	Target.Position = AvgPos;
+	Steering = Seek::CalculateSteering(deltaT, pAgent);
+
+	return Steering;
 }
 
 //*********************
 //SEPARATION (FLOCKING)
+SteeringOutput Separation::CalculateSteering(float deltaT, ASteeringAgent& Agent)
+{
+	return SteeringOutput();
+}
+
+
 
 //*************************
 //VELOCITY MATCH (FLOCKING)
+
+//SteeringOutput VelocityMatch::CalculateSteering(float deltaT, ASteeringAgent& Agent)
+//{
+//	return SteeringOutput();
+//}

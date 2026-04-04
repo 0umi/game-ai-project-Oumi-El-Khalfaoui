@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Movement/SteeringBehaviors/SteeringHelpers.h>
+#include "../SteeringHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
-#include <Movement/SteeringBehaviors/SteeringHelpers.h>
+
 
 class ASteeringAgent;
 
