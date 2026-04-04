@@ -32,8 +32,8 @@ public:
 	void ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize);
 
 #ifdef GAMEAI_USE_SPACE_PARTITIONING
-	//const TArray<ASteeringAgent*>& GetNeighbors() const { return pPartitionedSpace->GetNeighbors(); }
-	//int GetNrOfNeighbors() const { return pPartitionedSpace->GetNrOfNeighbors(); }
+	const TArray<ASteeringAgent*>& GetNeighbors() const { return pPartitionedSpace->GetNeighbors(); }
+	int GetNrOfNeighbors() const { return pPartitionedSpace->GetNrOfNeighbors(); }
 #else // No space partitioning
 	void RegisterNeighbors(ASteeringAgent* const Agent);
 	int GetNrOfNeighbors() const { return NrOfNeighbors; }
@@ -45,6 +45,8 @@ public:
 
 	void SetTarget_Seek(FSteeringParams const & Target);
 
+	ISteeringBehavior* GetSteeringBehavior() const { return pPrioritySteering.get(); }
+
 private:
 	// For debug rendering purposes
 	UWorld* pWorld{nullptr};
@@ -52,9 +54,9 @@ private:
 	int FlockSize{0};
 	TArray<ASteeringAgent*> Agents{};
 #ifdef GAMEAI_USE_SPACE_PARTITIONING
-	//std::unique_ptr<CellSpace> pPartitionedSpace{};
-	//int NrOfCellsX{ 10 };
-	//TArray<FVector2D> OldPositions{};
+	std::unique_ptr<CellSpace> pPartitionedSpace{};
+	int NrOfCellsX{ 10 };
+	TArray<FVector2D> OldPositions{};
 #else // No space partitioning
 	TArray<ASteeringAgent*> Neighbors{};
 #endif // USE_SPACE_PARTITIONING

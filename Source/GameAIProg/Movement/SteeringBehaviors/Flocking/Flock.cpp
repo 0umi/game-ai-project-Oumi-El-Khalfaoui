@@ -24,6 +24,7 @@ Flock::Flock(UWorld* pWorld, TSubclassOf<ASteeringAgent> AgentClass, int FlockSi
 	// blended
 	//priority
 
+	Neighbors.SetNum(FlockSize);
 
 	// spawn
 	Agents.SetNum(FlockSize);
@@ -39,8 +40,8 @@ Flock::Flock(UWorld* pWorld, TSubclassOf<ASteeringAgent> AgentClass, int FlockSi
 
 		if (Agent)
 		{
-			Agent->SetActorTickEnabled(false);
-			Agent->SetSteeringBehavior(pCohesionBehavior.get());
+			Agent->SetActorTickEnabled(true);
+			Agent->SetSteeringBehavior(pWanderBehavior.get());
 		}
 
 		Agents[index] = Agent;
@@ -65,9 +66,37 @@ Flock::~Flock()
 void Flock::Tick(float DeltaTime)
 {
  // TODO: update the flock
- // TODO: for every agent:
-  // TODO: register the neighbors for this agent (-> fill the memory pool with the neighbors for the currently evaluated agent)
-  // TODO: update the agent (-> the steeringbehaviors use the neighbors in the memory pool)
+	if (IsValid(pAgentToEvade))
+	{
+		FTargetData EvadeTarget;
+		EvadeTarget.Position = pAgentToEvade->GetPosition();
+		EvadeTarget.LinearVelocity = pAgentToEvade->GetLinearVelocity();
+		pEvadeBehavior->SetTarget(EvadeTarget);
+	}
+
+	// TODO: for every agent:
+	for (ASteeringAgent* Agent : Agents)
+	{
+		if (!IsValid(Agent))
+		{
+			continue;
+		}
+
+
+		// TODO: register the neighbors for this agent (-> fill the memory pool with the neighbors for the currently evaluated agent)
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+		FVector2D OldPos = Agent->GetPosition();
+		pPartitionedSpace->UpdateAgentCell(*Agents, OldPos);
+		pPartitionedSpace->RegisterNeighbors(*Agents, NeighborhoodRadius);
+
+#else
+		RegisterNeighbors(Agent);
+#endif // !GAMEAI_USE_SPACE_PARTITIONING
+
+
+		// TODO: update the agent (-> the steeringbehaviors use the neighbors in the memory pool)
+		
+	}
   // TODO: trim the agent to the world
 }
 
