@@ -17,22 +17,19 @@ SteeringOutput BlendedSteering::CalculateSteering(float DeltaT, ASteeringAgent& 
 	UWorld* World = Agent.GetWorld();
 	FVector AgentPos = FVector(Agent.GetPosition(), 0.f);
 
-	BlendedSteering.LinearVelocity = FVector2D::ZeroVector;
-	BlendedSteering.AngularVelocity = 0.f;
+	//BlendedSteering.LinearVelocity = FVector2D::ZeroVector;
+	//BlendedSteering.AngularVelocity = 0.f;
 
 	float totalWeight = 0.f;
 
 	for (const WeightedBehavior& wb : WeightedBehaviors)
 	{
-		
-
-		if (!wb.pBehavior)
+		if (!wb.pBehavior || wb.Weight <= KINDA_SMALL_NUMBER)
 		{
 			continue;
 		}
 
 		SteeringOutput steering = wb.pBehavior->CalculateSteering(DeltaT, Agent);
-
 		if (!steering.IsValid)
 		{
 			continue;
@@ -43,37 +40,27 @@ SteeringOutput BlendedSteering::CalculateSteering(float DeltaT, ASteeringAgent& 
 
 		totalWeight += wb.Weight;
 
-		// TODO: Add debug drawing
-		FVector Dir = FVector(steering.LinearVelocity, 0.f);
+		//normalise
+		if (totalWeight > KINDA_SMALL_NUMBER)
+		{
+			BlendedSteering.LinearVelocity /= totalWeight;
+			BlendedSteering.AngularVelocity /= totalWeight;
+		}
 
-		DrawDebugDirectionalArrow(
-			World,
-			AgentPos,
-			AgentPos + Dir,
-			20.f,
-			FColor::Blue,
-			false,
-			0.f,
-			0,
-			1.5f
-		);
-	}
-
-	if (World)
-	{
-		FVector FinalDir = FVector(BlendedSteering.LinearVelocity, 0.f);
-
-		DrawDebugDirectionalArrow(
-			World,
-			AgentPos,
-			AgentPos + FinalDir,
-			30.f,
-			FColor::Red,
-			false,
-			0.f,
-			0,
-			3.0f
-		);
+		if (Agent.GetDebugRenderingEnabled())
+		{
+			DrawDebugDirectionalArrow(
+				Agent.GetWorld(),
+				Agent.GetActorLocation(),
+				Agent.GetActorLocation() + FVector{ BlendedSteering.LinearVelocity, 0 } *(Agent.GetMaxLinearSpeed() * DeltaT),
+				30.f,
+				FColor::Red,
+				false,
+				-1.f,
+				0,
+				2.f
+			);
+		}
 	}
 
 	return BlendedSteering;
