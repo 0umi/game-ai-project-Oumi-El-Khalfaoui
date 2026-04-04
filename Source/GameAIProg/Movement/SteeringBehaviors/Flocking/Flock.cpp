@@ -40,8 +40,8 @@ Flock::Flock(UWorld* pWorld, TSubclassOf<ASteeringAgent> AgentClass, int FlockSi
 
 		if (Agent)
 		{
-			Agent->SetActorTickEnabled(true);
-			Agent->SetSteeringBehavior(pWanderBehavior.get());
+			Agent->SetActorTickEnabled(false);
+			Agent->SetSteeringBehavior(pCohesionBehavior.get());
 		}
 
 		Agents[index] = Agent;
@@ -95,7 +95,8 @@ void Flock::Tick(float DeltaTime)
 
 
 		// TODO: update the agent (-> the steeringbehaviors use the neighbors in the memory pool)
-		
+		SteeringOutput Output = pCohesionBehavior->CalculateSteering(DeltaTime, *Agent);
+		Agent->AddMovementInput(FVector(Output.LinearVelocity, 0.f));
 	}
   // TODO: trim the agent to the world
 }
@@ -165,6 +166,25 @@ void Flock::RenderNeighborhood()
 void Flock::RegisterNeighbors(ASteeringAgent* const pAgent)
 {
  // TODO: Implement
+	NrOfNeighbors = 0;
+
+	FVector2D AgentPos = pAgent->GetPosition();
+
+	for (ASteeringAgent* Other : Agents)
+	{
+		if (!IsValid(Other) || Other == pAgent)
+		{
+			continue;
+		}
+
+		float Dist = FVector2D::Distance(AgentPos, Other->GetPosition());
+
+		if (Dist <= NeighborhoodRadius)
+		{
+			Neighbors[NrOfNeighbors] = Other;
+			++NrOfNeighbors;
+		}
+	}
 }
 #endif
 
@@ -173,8 +193,30 @@ FVector2D Flock::GetAverageNeighborPos() const
 	FVector2D avgPosition = FVector2D::ZeroVector;
 
  // TODO: Implement
-	
-	return avgPosition;
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+	int NrN = pPartitionedSpace->GetNrOfNeighbors();
+	auto const& N = pPartitionedSpace->GetNeighbors();
+#else
+	int NrN = NrOfNeighbors;
+	auto const& N = Neighbors;
+
+#endif // !GAMEAI_USE_SPACE_PARTITIONING
+
+	if (NrN == 0)
+	{
+		return avgPosition;
+	}
+
+	for (int index = 0; index < NrN; index++)
+	{
+		if (IsValid(N[index]))
+		{
+			avgPosition += N[index]->GetPosition();
+		}
+	}
+
+
+	return avgPosition / static_cast<float>(NrN);
 }
 
 FVector2D Flock::GetAverageNeighborVelocity() const

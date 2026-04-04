@@ -19,7 +19,7 @@ SteeringOutput Cohesion::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
 
 	Target.Position = AvgPos;
 	Steering = Seek::CalculateSteering(deltaT, pAgent);
-	Steering.LinearVelocity *= 5.f;
+	//Steering.LinearVelocity *= 5.f;
 	return Steering;
 }
 
